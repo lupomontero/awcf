@@ -56,14 +56,6 @@ class Router extends HTMLElement {
       return findContainingAnchor(element.parentElement);
     };
 
-    // const a = (
-    //   event.target.tagName === 'A'
-    //     ? event.target
-    //     : event.target.parentElement?.tagName === 'A'
-    //       ? event.target.parentElement
-    //       : null
-    // );
-
     const a = findContainingAnchor(event.target);
 
     if (!a) {

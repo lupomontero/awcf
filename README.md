@@ -44,21 +44,6 @@ root.appendChild(router);
 - Async route handling
 - Component lifecycle management
 
-### Service Worker (`register-sw.js`)
-
-Progressive Web App functionality:
-
-```javascript
-import 'awcf/register-sw';
-// Automatically registers service worker
-```
-
-**Features:**
-- Automatic service worker registration
-- Cache management strategies
-- Offline functionality
-- Update notifications
-
 ### Build Integration (`vite-plugin-sw.js`)
 
 Vite plugin for service worker integration:
@@ -78,7 +63,6 @@ export default defineConfig({
 ```
 sdk/
 ├── Router.js           # Component mounting system
-├── register-sw.js      # Service worker registration
 ├── vite-plugin-sw.js  # Vite service worker plugin
 └── package.json       # Dependencies and peer deps
 ```
@@ -211,7 +195,6 @@ export default {
 
 ```javascript
 // src/main.js
-import 'awcf/register-sw';
 import Router from 'awcf/Router';
 
 const main = async () => {
