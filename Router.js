@@ -1,14 +1,15 @@
-class Router extends HTMLElement {
+import Component from './Component.js';
+import Route from './Route.js';
+
+class Router extends Component {
   #urlPrefix = import.meta.env.BASE_URL || '';
-  #renderedRoute;
   #routes;
-  #state;
+  #renderedRoute;
 
   constructor(routes, state) {
-    super();
+    super(state);
 
     this.#routes = routes;
-    this.#state = state;
     this.render = this.render.bind(this);
     this.handleLinkClick = this.handleLinkClick.bind(this);
     this.navigateTo = this.navigateTo.bind(this);
@@ -31,14 +32,13 @@ class Router extends HTMLElement {
   }
 
   setState(newState) {
-    this.#state = {
-      ...this.#state,
-      ...newState,
-    };
+    // QUESTION: Only setState on children and not on self?
+    super.setState(newState, false);
 
     [...this.children].forEach(child => {
       if (typeof child.setState === 'function') {
-        child.setState({ ...this.#state, router: this });
+        // TODO: Should router be assigned to state???
+        child.setState({ ...this.state, router: this });
       }
     });
   }
@@ -73,12 +73,19 @@ class Router extends HTMLElement {
 
   async render() {
     const pathname = window.location.pathname.replace(this.#urlPrefix, '/');
-    const route = this.matchRoute(pathname) || this.#routes['/404'];
+    const [route, params] = this.matchRoute(pathname) || [this.#routes['/404'], {}];
 
-    this.#renderedRoute = await route({
-      ...this.#state,
-      router: this,
-    });
+    this.#renderedRoute = await route(this, params);
+
+    if (!(this.#renderedRoute instanceof Route)) {
+      console.warn(`Route ${pathname} did not return a Route instance`);
+    }
+
+    if (!(this.#renderedRoute instanceof HTMLElement)) {
+      console.error(`Route ${pathname} did not return an HTMLElement instance`);
+      return;
+    }
+
     this.outlet.innerHTML = '';
     this.outlet.appendChild(this.#renderedRoute);
 
@@ -95,7 +102,7 @@ class Router extends HTMLElement {
 
   matchRoute(pathname) {
     if (this.#routes[pathname]) {
-      return this.#routes[pathname];
+      return [this.#routes[pathname], {}];
     }
 
     const pathSegments = pathname.split('/').filter(Boolean);
@@ -121,7 +128,8 @@ class Router extends HTMLElement {
       }
 
       if (isMatch) {
-        return (...args) => this.#routes[route](...args, params);
+        // return (...args) => this.#routes[route](...args, params);
+        return [this.#routes[route], params];
       }
     }
 
