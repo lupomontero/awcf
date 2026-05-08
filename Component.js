@@ -6,7 +6,7 @@ class Component extends HTMLElement {
   constructor(state = {}) {
     super();
     this.#state = state;
-    this.render = debounce(this.render.bind(this), 10);
+    this.render = debounce(this.render.bind(this), 50);
     this.unsubscribes = [];
   }
 
