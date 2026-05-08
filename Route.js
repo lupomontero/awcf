@@ -16,14 +16,6 @@ class Route extends Component {
     }
   }
 
-  // connectedCallback() {
-  //   // ...
-  // }
-
-  // disconnectedCallback() {
-  //   // ...
-  // }
-
   navigateTo(path) {
     const { router } = this;
 
