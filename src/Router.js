@@ -2,7 +2,7 @@ import Component from './Component.js';
 import Route from './Route.js';
 
 class Router extends Component {
-  #urlPrefix = import.meta.env.BASE_URL || '';
+  #urlPrefix = import.meta.env?.BASE_URL || '';
   #routes;
   #renderedRoute;
 
@@ -128,7 +128,6 @@ class Router extends Component {
       }
 
       if (isMatch) {
-        // return (...args) => this.#routes[route](...args, params);
         return [this.#routes[route], params];
       }
     }

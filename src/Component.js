@@ -11,7 +11,7 @@ class Component extends HTMLElement {
   }
 
   get state() {
-    return this.#state;
+    return { ...this.#state };
   }
 
   connectedCallback() {
@@ -20,7 +20,7 @@ class Component extends HTMLElement {
 
   disconnectedCallback() {
     if (Array.isArray(this.unsubscribes) && this.unsubscribes.length > 0) {
-      this.unsubscribes.forEach((unsubscribe) => unsubscribe());
+      this.unsubscribes.forEach(unsubscribe => unsubscribe());
     }
 
     this.unsubscribes = [];
