@@ -4,6 +4,9 @@
 
 > Experimental. Use at your own risk.
 
+[![Unit Tests](https://github.com/lupomontero/awcf/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/lupomontero/awcf/actions/workflows/unit-tests.yml)
+[![Playwright Tests](https://github.com/lupomontero/awcf/actions/workflows/playwright.yml/badge.svg)](https://github.com/lupomontero/awcf/actions/workflows/playwright.yml)
+
 ## Modules
 
 | Export | Description |
