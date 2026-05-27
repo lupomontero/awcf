@@ -2,14 +2,15 @@ import Component from './Component.js';
 import Route from './Route.js';
 
 class Router extends Component {
-  #urlPrefix = import.meta.env?.BASE_URL || '';
+  #urlPrefix;
   #routes;
   #renderedRoute;
 
-  constructor(routes, state) {
+  constructor(routes, state, urlPrefix = '') {
     super(state);
 
     this.#routes = routes;
+    this.#urlPrefix = urlPrefix;
     this.render = this.render.bind(this);
     this.handleLinkClick = this.handleLinkClick.bind(this);
     this.navigateTo = this.navigateTo.bind(this);
@@ -29,18 +30,6 @@ class Router extends Component {
   disconnectedCallback() {
     window.removeEventListener('popstate', this.render);
     this.removeEventListener('click', this.handleLinkClick);
-  }
-
-  setState(newState) {
-    // QUESTION: Only setState on children and not on self?
-    super.setState(newState, false);
-
-    [...this.children].forEach(child => {
-      if (typeof child.setState === 'function') {
-        // TODO: Should router be assigned to state???
-        child.setState({ ...this.state, router: this });
-      }
-    });
   }
 
   handleLinkClick(event) {
@@ -71,8 +60,26 @@ class Router extends Component {
     this.navigateTo(a.getAttribute('href'));
   }
 
+  // Extracts the pathname from the current URL, removing the URL prefix if it
+  // exists, and returns a "normalized" pathname that can be used for route
+  // matching (always leading slash and never trailing slash).
+  // NOTE: this.#urlPrefix is a user provided string that may or may not have
+  // leading/trailing slashes, so we need to normalize it before using it.
+  getPathnameWithoutPrefix() {
+    const normalizedUrlPrefix = this.#urlPrefix
+      ? `/${this.#urlPrefix.replace(/^\/|\/$/g, '')}`
+      : '';
+    const pathname = window.location.pathname;
+
+    if (normalizedUrlPrefix && pathname.startsWith(normalizedUrlPrefix)) {
+      return pathname.slice(normalizedUrlPrefix.length) || '/';
+    }
+
+    return pathname;
+  }
+
   async render() {
-    const pathname = window.location.pathname.replace(this.#urlPrefix, '/');
+    const pathname = this.getPathnameWithoutPrefix();
     const [route, params] = this.matchRoute(pathname) || [this.#routes['/404'], {}];
 
     this.#renderedRoute = await route(this, params);
@@ -105,30 +112,12 @@ class Router extends Component {
       return [this.#routes[pathname], {}];
     }
 
-    const pathSegments = pathname.split('/').filter(Boolean);
+    const absoluteURL = new URL(pathname, window.location.origin);
 
     for (const route in this.#routes) {
-      const routeSegments = route.split('/').filter(Boolean);
-
-      if (routeSegments.length !== pathSegments.length) {
-        continue;
-      }
-
-      const params = {};
-      let isMatch = true;
-
-      for (let i = 0; i < routeSegments.length; i++) {
-        if (routeSegments[i].startsWith(':')) {
-          const paramName = routeSegments[i].slice(1);
-          params[paramName] = pathSegments[i];
-        } else if (routeSegments[i] !== pathSegments[i]) {
-          isMatch = false;
-          break;
-        }
-      }
-
-      if (isMatch) {
-        return [this.#routes[route], params];
+      const match = new URLPattern(route, window.location.origin).exec(absoluteURL);
+      if (match) {
+        return [this.#routes[route], match.pathname.groups];
       }
     }
 

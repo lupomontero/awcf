@@ -34,22 +34,22 @@ customElements.define('my-widget', MyWidget);
 
 ### API
 
-**`constructor(state = {})`**  
+**`constructor(state = {})`**
 Initializes the component with an optional initial state object. `render()` is automatically debounced (50 ms).
 
-**`get state`**  
+**`get state`**
 Returns a shallow copy of the current state. The internal state is private (`#state`) and cannot be mutated directly.
 
-**`setState(newState, render = true)`**  
+**`setState(newState, render = true)`**
 Merges `newState` into the current state. Triggers `render()` by default; pass `false` as the second argument to suppress re-rendering.
 
-**`render()`**  
+**`render()`**
 Must be implemented by subclasses. Called automatically on `connectedCallback` and after `setState`. Throws if not overridden.
 
-**`unsubscribes`**  
+**`unsubscribes`**
 An array of cleanup functions. Populate it in `connectedCallback` with teardown callbacks (e.g. Firestore `onSnapshot` unsubscribes). They are called automatically on `disconnectedCallback`.
 
-**`attributeChangedCallback(name, oldValue, newValue)`**  
+**`attributeChangedCallback(name, oldValue, newValue)`**
 Calls `render()` when a watched attribute changes. Requires the subclass to define a static `observedAttributes` array.
 
 ---
@@ -79,17 +79,17 @@ export default Happening;
 
 ### API
 
-**`constructor(router, params = {}, defaultClass = 'page')`**  
+**`constructor(router, params = {}, defaultClass = 'page')`**
 - `router` — must be a `Router` instance (validated at construction time).
 - `params` — URL parameters extracted from the matched route pattern (e.g. `{ happeningId: '123' }` for `/happenings/:happeningId`).
 - `defaultClass` — CSS class added to the element automatically (default: `'page'`). Pass `null` to disable.
 
 Inherits the router's current state via `super(router.state)`.
 
-**`this.router`** — the `Router` instance.  
+**`this.router`** — the `Router` instance.
 **`this.params`** — the URL params object for the current match.
 
-**`navigateTo(path)`**  
+**`navigateTo(path)`**
 Delegates to `router.navigateTo(path)`. Performs a client-side navigation without a full page reload.
 
 ---
@@ -136,26 +136,27 @@ Route handlers must return an `HTMLElement`. If the returned element is not a `R
 
 ### Features
 
-- **Parameterized paths** — segments prefixed with `:` are captured as params (e.g. `/users/:id`).
+- **Parameterized paths** — route patterns use the [`URLPattern`](https://developer.mozilla.org/en-US/docs/Web/API/URLPattern) API, so any syntax it supports works (e.g. `/users/:id`, wildcards).
 - **`/404` fallback** — rendered when no route matches.
 - **Link interception** — clicks on any `<a>` whose `hostname` matches `window.location.hostname` are intercepted and handled as client-side navigations.
 - **Hash scrolling** — after navigation, scrolls to the element matching `window.location.hash`, or to the top of the page.
-- **`BASE_URL` support** — strips Vite's `import.meta.env.BASE_URL` prefix from pathnames before matching.
+- **URL prefix stripping** — pass a `urlPrefix` to the constructor to strip a base path before route matching (useful when the app is served from a subdirectory).
 
 ### API
 
-**`constructor(routes, state)`**  
+**`constructor(routes, state, urlPrefix = '')`**
 - `routes` — plain object mapping path strings to async handler functions.
 - `state` — initial shared state passed down to all route components.
+- `urlPrefix` — optional base path to strip from `window.location.pathname` before matching routes (e.g. `'/examples/router-minimal'`). Leading and trailing slashes are normalized automatically.
 
-**`setState(newState)`**  
-Updates the router's state and propagates it to all direct children that implement `setState`.
-
-**`navigateTo(path)`**  
+**`navigateTo(path)`**
 Pushes `path` to the History stack and triggers a re-render.
 
-**`matchRoute(pathname)`**  
-Returns `[handlerFn, params]` for the best matching route, or `null` if none matches.
+**`getPathnameWithoutPrefix()`**
+Returns the current `window.location.pathname` with the `urlPrefix` stripped and normalized (always has a leading slash, never a trailing slash).
+
+**`matchRoute(pathname)`**
+Returns `[handlerFn, params]` for the best matching route using `URLPattern`, or `null` if none matches. `params` is the `pathname.groups` object from the `URLPattern` match.
 
 ---
 
@@ -213,7 +214,8 @@ npm pkg set type="module"
 npm pkg set scripts.start="vite"
 npm pkg set scripts.build="vite build"
 npm pkg set scripts.preview="vite preview"
-npm i awcf
+npm pkg delete main
+npm i lupomontero/awcf
 npm i -D vite
 ```
 
