@@ -40,10 +40,43 @@ describe('Router', () => {
     class TestRouter extends Router {}
     customElements.define('is-html-element-instance', TestRouter);
 
-    const instance = new TestRouter();
+    const instance = new TestRouter({});
     assert.ok(
       instance instanceof HTMLElement,
       'Router is not an instance of HTMLElement',
+    );
+  });
+
+  it('throws an error if the first argument is not an object', () => {
+    assert.throws(
+      () => new Router(null),
+      /Routes must be a plain object/,
+    );
+    assert.throws(
+      () => new Router('not an object'),
+      /Routes must be a plain object/,
+    );
+  });
+
+  it('throws an error if the state argument is not a plain object', () => {
+    assert.throws(
+      () => new Router({}, 'not a plain object'),
+      /State must be a plain object/,
+    );
+    assert.throws(
+      () => new Router({}, null),
+      /State must be a plain object/,
+    );
+  });
+
+  it('throws an error if the URL prefix is not a string', () => {
+    assert.throws(
+      () => new Router({}, {}, 123),
+      /URL prefix must be a string/,
+    );
+    assert.throws(
+      () => new Router({}, {}, null),
+      /URL prefix must be a string/,
     );
   });
 });

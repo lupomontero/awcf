@@ -1,16 +1,30 @@
 import Component from './Component.js';
 import Route from './Route.js';
+import { isPlainObject } from './util.js';
 
 class Router extends Component {
   #urlPrefix;
   #routes;
   #renderedRoute;
 
-  constructor(routes, state, urlPrefix = '') {
+  constructor(routes, state = {}, urlPrefix = '') {
     super(state);
+
+    if (!isPlainObject(routes)) {
+      throw new Error('Routes must be a plain object');
+    }
+
+    if (!isPlainObject(state)) {
+      throw new Error('State must be a plain object');
+    }
+
+    if (typeof urlPrefix !== 'string') {
+      throw new Error('URL prefix must be a string');
+    }
 
     this.#routes = routes;
     this.#urlPrefix = urlPrefix;
+
     this.render = this.render.bind(this);
     this.handleLinkClick = this.handleLinkClick.bind(this);
     this.navigateTo = this.navigateTo.bind(this);

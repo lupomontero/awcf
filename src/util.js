@@ -11,3 +11,7 @@ export const debounce = (callback, wait) => {
     }, wait);
   };
 }
+
+export const isPlainObject = (obj) => {
+  return Object.prototype.toString.call(obj) === '[object Object]';
+};
